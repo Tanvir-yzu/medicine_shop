@@ -3,68 +3,68 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-  <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">{{ title }}</h2>
+<section class="max-w-2xl mx-auto">
+  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-lg shadow-slate-200/40 dark:shadow-black/30 p-6 md:p-8">
+    <h2 class="text-3xl font-extrabold text-slate-800 dark:text-slate-100 mb-6">{{ title }}</h2>
 
-  {% if scanned_data %}
-    <div class="bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 text-blue-700 dark:text-blue-300 p-4 mb-6 rounded">
-      <p class="font-bold">New Medicine Detected</p>
-      <p class="text-sm mt-1">
-        The scanned code <strong>{{ scanned_data }}</strong> was not found.
-        We pre-filled the form with the data we could parse. Please review and complete the information.
-      </p>
-    </div>
-  {% endif %}
-
-  <form method="post" class="space-y-5">
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-
-    {% for field in form %}
-      <div>
-        <label for="{{ field.id_for_label }}"
-               class="block text-gray-700 dark:text-gray-200 text-sm font-semibold mb-1">
-          {{ field.label }}
-          {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
-        </label>
-
-        {% if field.field.widget.input_type == 'select' %}
-          {{ field }}
-        {% elif field.field.widget.input_type == 'textarea' %}
-          {{ field }}
-        {% else %}
-          {{ field }}
-        {% endif %}
-
-        {% if field.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>
-        {% endif %}
-        {% if field.help_text %}
-          <p class="text-gray-500 dark:text-gray-400 text-xs mt-1">{{ field.help_text }}</p>
-        {% endif %}
+    {% if scanned_data %}
+      <div class="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 rounded-xl p-4 mb-6">
+        <p class="font-semibold">New medicine detected</p>
+        <p class="text-sm mt-1">
+          The code <strong>{{ scanned_data }}</strong> wasn’t found.  
+          We pre-filled everything we could—review and save when ready.
+        </p>
       </div>
-    {% endfor %}
+    {% endif %}
 
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4">
-      <a href="{% url 'medicine_list' %}"
-         class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition">
-        Cancel
-      </a>
-      <button type="submit"
-              class="inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition">
-        Save
-      </button>
-    </div>
-  </form>
-</div>
+    <form method="post" class="space-y-5">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}"
+                 class="block text-slate-700 dark:text-slate-300 text-sm font-semibold mb-1.5">
+            {{ field.label }}
+            {% if field.field.required %}<span class="text-rose-500">*</span>{% endif %}
+          </label>
+
+          {#  render the actual input  #}
+          {{ field }}
+
+          {% if field.errors %}
+            <p class="text-rose-500 text-xs mt-1">{{ field.errors.0 }}</p>
+          {% endif %}
+          {% if field.help_text %}
+            <p class="text-slate-500 dark:text-slate-400 text-xs mt-1">{{ field.help_text }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-4">
+        <a href="{% url 'medicine_list' %}"
+           class="px-4 py-2.5 rounded-lg text-sm font-medium border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+          Cancel
+        </a>
+        <button type="submit"
+                class="px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900 transition">
+          Save
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
 
 <style>
-  /* Tailwind-only tweaks when you do NOT have a custom CSS file */
+  /* Modern form controls that match the palette */
   input, select, textarea {
-    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+    @apply w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700
+          bg-white dark:bg-slate-800
+          text-slate-900 dark:text-slate-100
+          placeholder:text-slate-400 dark:placeholder:text-slate-500
+          focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+          transition;
   }
-  select[multiple] {
-    @apply h-auto;
-  }
+  select[multiple] { @apply h-auto; }
 </style>
 {% endblock %}
