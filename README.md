@@ -128,8 +128,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Tailwind CSS](https://tailwindcss.com/) - CSS framework
 - [Font Awesome](https://fontawesome.com/) - Icon library
 
-<img src="./Photo/01.png" width="800px" height="300px">
-<img src="./Photo/02.png" width="800px" height="300px">
+<img src="./Photo/01.png" width="600px" height="300px">
+<img src="./Photo/02.png" width="600px" height="300px">
 <img src="./Photo/03.png" width="500px" height="300px">
 <img src="./Photo/04.png" width="500px" height="300px">
 <img src="./Photo/05.png" width="500px" height="300px">
