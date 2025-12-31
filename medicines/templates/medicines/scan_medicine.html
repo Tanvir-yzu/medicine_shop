@@ -1,0 +1,86 @@
+{# medicines/scan.html #}
+{% extends 'medicines/base.html' %}
+
+{% block title %}Scan QR Code{% endblock %}
+
+{% block extra_js %}
+    <!-- working CDN build -->
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
+    <h2 class="text-2xl font-bold mb-6 text-center">Scan Medicine QR Code</h2>
+
+    {% if error %}
+        <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+            <p class="font-bold">Oops! {{ error }}</p>
+            {% if suggestions %}
+                <p class="mt-2">Suggestions:</p>
+                <ul class="list-disc list-inside mt-1 space-y-1 text-sm">
+                    {% for suggestion in suggestions %}
+                        <li>{{ suggestion|safe }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="mb-6">
+        <div id="qr-reader" class="w-full bg-gray-100 rounded-lg p-4"></div>
+        <div id="qr-reader-results" class="mt-4 text-center text-gray-600"></div>
+    </div>
+
+    <form method="post" id="qr-form" class="hidden">
+        {% csrf_token %}
+        <input type="hidden" name="qr_data" id="qr_data_input">
+    </form>
+
+    <div class="mt-8">
+        <h3 class="text-lg font-semibold text-gray-700 mb-3">Or enter code manually</h3>
+        <form method="post" class="flex">
+            {% csrf_token %}
+            <input
+                type="text"
+                name="qr_data"
+                placeholder="Scan or type the code here"
+                value="{{ scanned_data|default:'' }}"
+                class="flex-grow px-4 py-2 border border-gray-300 rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+            >
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r">
+                Search
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+  function onScanSuccess(decodedText, decodedResult) {
+    console.log(`QR Code scanned: ${decodedText}`, decodedResult);
+    document.getElementById('qr-reader-results').innerHTML =
+        `<span class="text-green-600 font-semibold">Scanned: ${decodedText}</span>`;
+    document.getElementById('qr_data_input').value = decodedText;
+    document.getElementById('qr-form').submit();
+  }
+
+  function onScanFailure(error) {
+    // ignore benign errors so the preview keeps running
+    console.warn(`QR scan error: ${error}`);
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const html5QrcodeScanner = new Html5QrcodeScanner(
+      "qr-reader",
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+        rememberLastUsedCamera: true,
+        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+      },
+      false
+    );
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+  });
+</script>
+{% endblock %}
