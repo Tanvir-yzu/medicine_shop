@@ -127,3 +127,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Django Documentation](https://www.djangoproject.com/) - Web framework
 - [Tailwind CSS](https://tailwindcss.com/) - CSS framework
 - [Font Awesome](https://fontawesome.com/) - Icon library
+
+<img src="./Photo/01.png" width="500px" height="300px">
+<img src="./Photo/02.png" width="500px" height="300px">
+<img src="./Photo/03.png" width="500px" height="300px">
+<img src="./Photo/04.png" width="500px" height="300px">
+<img src="./Photo/05.png" width="500px" height="300px">
+<img src="./Photo/06.png" width="500px" height="300px">
+<img src="./Photo/07.png" width="500px" height="300px">
+<img src="./Photo/08.png" width="500px" height="300px">
