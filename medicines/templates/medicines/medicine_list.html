@@ -69,10 +69,12 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
+                    {% now "Y-m-d" as today_str %}
+                    {% with today_str|date:"Y-m-d" as today %}
                     {% for medicine in medicines %}
-                    <tr class="hover:bg-gradient-to-r hover:from-cyan-50 hover:to-blue-50 transition-all duration-200 group">
+                    <tr class="hover:bg-gradient-to-r hover:from-cyan-50 hover:to-blue-50 transition-all duration-200 group {% if medicine.expiry_date <= today %}bg-red-50/50{% endif %}">
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <a href="{% url 'medicine_detail' medicine.pk %}" class="text-primary font-semibold hover:text-primary-dark text-lg group-hover:underline">
+                            <a href="{% url 'medicine_detail' medicine.pk %}" class="{% if medicine.expiry_date <= today %}text-red-600{% else %}text-primary{% endif %} font-semibold {% if medicine.expiry_date <= today %}hover:text-red-800{% else %}hover:text-primary-dark{% endif %} text-lg group-hover:underline">
                                 <i class="fas fa-prescription-bottle-alt mr-2 text-sm"></i>{{ medicine.name }}
                             </a>
                         </td>
@@ -85,18 +87,15 @@
                             {{ medicine.manufacturer }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            {% now "Y-m-d" as today_str %}
-                            {% with today_str|date:"Y-m-d" as today %}
-                                {% if medicine.expiry_date <= today %}
-                                    <span class="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold">
-                                        <i class="fas fa-exclamation-circle mr-1"></i>{{ medicine.expiry_date|date:"Y-m-d" }}
-                                    </span>
-                                {% else %}
-                                    <span class="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                                        <i class="fas fa-check-circle mr-1"></i>{{ medicine.expiry_date|date:"Y-m-d" }}
-                                    </span>
-                                {% endif %}
-                            {% endwith %}
+                            {% if medicine.expiry_date <= today %}
+                                <span class="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold border-2 border-red-200">
+                                    <i class="fas fa-exclamation-circle mr-1 animate-pulse"></i>{{ medicine.expiry_date|date:"Y-m-d" }}
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                                    <i class="fas fa-check-circle mr-1"></i>{{ medicine.expiry_date|date:"Y-m-d" }}
+                                </span>
+                            {% endif %}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             {% if medicine.stock < 5 %}
@@ -146,6 +145,7 @@
                         </td>
                     </tr>
                     {% endfor %}
+                    {% endwith %}
                 </tbody>
             </table>
         </div>
