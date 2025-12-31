@@ -130,7 +130,6 @@ ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
 SOCIALACCOUNT_ONLY = True                          # Critical: disables local email/password login/signup
 ACCOUNT_EMAIL_VERIFICATION = 'none'                # No verification emails
 SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
-
 # Trust Google's email verification
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
@@ -149,3 +148,4 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 # Redirects
 LOGIN_REDIRECT_URL = reverse_lazy('medicine_list')
 LOGOUT_REDIRECT_URL = reverse_lazy('login')
+SOCIALACCOUNT_ADAPTER = 'user.adapters.CustomSocialAccountAdapter'
