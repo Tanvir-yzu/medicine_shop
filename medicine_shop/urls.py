@@ -8,22 +8,8 @@ from django.urls import reverse_lazy  # Add this import
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('medicines.urls')),
-    
-    # Login configuration with template and redirects
-    path('login/', 
-         auth_views.LoginView.as_view(
-             template_name='registration/login.html',
-             redirect_authenticated_user=True  # Redirect logged-in users away from login page
-         ), 
-         name='login'),
-         
-    # Logout configuration with secure redirect
-    path('logout/', 
-         auth_views.LogoutView.as_view(
-             next_page=reverse_lazy('login'),  # Redirect to login after logout
-             template_name='registration/logged_out.html'  # Optional logout confirmation
-         ), 
-         name='logout'),
+    path('accounts/', include('allauth.urls')),
+    path('user/', include('user.urls')),
 ]
 
 if settings.DEBUG:
