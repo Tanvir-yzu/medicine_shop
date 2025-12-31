@@ -57,7 +57,7 @@ ROOT_URLCONF = "medicine_shop.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        'DIRS': [BASE_DIR / 'templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -129,3 +129,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # medicine_shop/settings.py
 APPEND_SLASH = True
+
+# At the bottom of settings.py
+LOGIN_URL = 'login'  # Where unauthenticated users are sent
+LOGIN_REDIRECT_URL = 'medicine_list'  # After login (use your main view name)
+LOGOUT_REDIRECT_URL = 'login'  # After logout
