@@ -1,11 +1,23 @@
 # medicines/views.py
 from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q, F
+from django.db.models import Q
 from django.utils import timezone
+from django.contrib import messages
+
 from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
+
 from .models import Medicine, ScanLog
 from .forms import MedicineForm
+
+# Optional: For Postgres Trigram search
+try:
+    from django.contrib.postgres.search import TrigramSimilarity
+    POSTGRES_AVAILABLE = True
+except ImportError:
+    POSTGRES_AVAILABLE = False
+
 
 @login_required
 def medicine_list(request):
@@ -30,16 +42,19 @@ def medicine_list(request):
         'query': query,
     })
 
+
 @login_required
 def medicine_detail(request, pk):
     medicine = get_object_or_404(Medicine, pk=pk)
     return render(request, 'medicines/medicine_detail.html', {'medicine': medicine})
+
 
 @login_required
 def medicine_create(request):
     initial_data = {}
     scanned_data = request.GET.get('data', '')
 
+    # Pre-fill form if QR data is provided
     if scanned_data:
         parts = scanned_data.split('-')
         if len(parts) >= 4 and parts[0] == 'MED':
@@ -50,6 +65,7 @@ def medicine_create(request):
         form = MedicineForm(request.POST)
         if form.is_valid():
             medicine = form.save()
+            messages.success(request, f"Medicine '{medicine.name}' created successfully!")
             return redirect('medicine_detail', pk=medicine.pk)
     else:
         form = MedicineForm(initial=initial_data)
@@ -58,6 +74,7 @@ def medicine_create(request):
         'form': form, 'title': 'Add New Medicine', 'scanned_data': scanned_data
     })
 
+
 @login_required
 def medicine_update(request, pk):
     medicine = get_object_or_404(Medicine, pk=pk)
@@ -65,18 +82,25 @@ def medicine_update(request, pk):
         form = MedicineForm(request.POST, instance=medicine)
         if form.is_valid():
             medicine = form.save()
+            messages.success(request, f"Medicine '{medicine.name}' updated successfully!")
             return redirect('medicine_detail', pk=medicine.pk)
     else:
         form = MedicineForm(instance=medicine)
-    return render(request, 'medicines/medicine_form.html', {'form': form, 'title': f'Update {medicine.name}'})
+    return render(request, 'medicines/medicine_form.html', {
+        'form': form, 'title': f'Update {medicine.name}'
+    })
+
 
 @login_required
 def medicine_delete(request, pk):
     medicine = get_object_or_404(Medicine, pk=pk)
     if request.method == 'POST':
+        name = medicine.name
         medicine.delete()
+        messages.success(request, f"Medicine '{name}' deleted successfully!")
         return redirect('medicine_list')
     return render(request, 'medicines/medicine_confirm_delete.html', {'medicine': medicine})
+
 
 @login_required
 def scan_medicine(request):
@@ -85,36 +109,36 @@ def scan_medicine(request):
         medicine = None
         error_message = None
         suggestions = []
+
         scan_log = ScanLog(user=request.user, scanned_data=qr_data)
 
         if not qr_data:
             error_message = "No data was scanned or entered. Please try again."
         else:
             # --- Recognition Logic ---
-            # 1. Try exact match using our format "MED-ID-Name-Batch"
             try:
                 parts = qr_data.split('-')
                 if len(parts) >= 2 and parts[0] == 'MED':
-                    medicine_id = parts[1]
+                    medicine_id = int(parts[1])
                     medicine = Medicine.objects.get(pk=medicine_id)
             except (IndexError, ValueError, Medicine.DoesNotExist):
-                # 2. If format fails, try exact match on batch number
+                # Fallback to batch number exact match
                 try:
                     medicine = Medicine.objects.get(batch_number=qr_data)
                 except Medicine.DoesNotExist:
-                    # 3. If all else fails, perform a fast, database-level fuzzy search
-                    fuzzy_matches = Medicine.objects.annotate(
-                        similarity=TrigramSimilarity('batch_number', qr_data)
-                    ).filter(similarity__gt=0.3).order_by('-similarity')
+                    # Optional: fuzzy search using Postgres TrigramSimilarity
+                    if POSTGRES_AVAILABLE:
+                        fuzzy_matches = Medicine.objects.annotate(
+                            similarity=TrigramSimilarity('batch_number', qr_data)
+                        ).filter(similarity__gt=0.3).order_by('-similarity')
 
-                    if fuzzy_matches.exists():
-                        # If multiple matches, show them to the user
-                        scan_log.recognized = False
-                        scan_log.save()
-                        return render(request, 'medicines/scan_results.html', {
-                            'matches': fuzzy_matches,
-                            'search_term': qr_data,
-                        })
+                        if fuzzy_matches.exists():
+                            scan_log.recognized = False
+                            scan_log.save()
+                            return render(request, 'medicines/scan_results.html', {
+                                'matches': fuzzy_matches,
+                                'search_term': qr_data,
+                            })
 
         # --- Post-Recognition Actions ---
         if medicine:
@@ -125,14 +149,16 @@ def scan_medicine(request):
         else:
             scan_log.recognized = False
             scan_log.save()
-            error_message = f"Medicine not found for the scanned data: '{qr_data}'."
+            error_message = f"Medicine not found for the scanned data: '{qr_data}'"
             suggestions.append("Check if the QR code is clear and undamaged.")
             suggestions.append("Verify if the medicine has been registered in the system.")
             create_url = f"{reverse('medicine_create')}?data={qr_data}"
             suggestions.append(f"If this is a new medicine, you can <a href='{create_url}'>add it now</a>.")
 
         return render(request, 'medicines/scan_medicine.html', {
-            'error': error_message, 'suggestions': suggestions, 'scanned_data': qr_data,
+            'error': error_message,
+            'suggestions': suggestions,
+            'scanned_data': qr_data,
         })
 
     return render(request, 'medicines/scan_medicine.html')
