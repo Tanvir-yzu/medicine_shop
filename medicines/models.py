@@ -5,6 +5,7 @@ from io import BytesIO
 from django.core.files import File
 from PIL import Image
 from django.conf import settings
+from django.utils.encoding import force_str
 
 class Medicine(models.Model):
     name = models.CharField(max_length=255)
@@ -20,7 +21,7 @@ class Medicine(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.name} ({self.batch_number})"
+        return force_str(f"Medicine #{self.pk} - {self.name}")
 
     def save(self, *args, **kwargs):
         # Important: This is the data format your scan view will parse

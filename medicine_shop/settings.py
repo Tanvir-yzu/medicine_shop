@@ -123,7 +123,7 @@ ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 
 # New style settings (recommended)
-ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_LOGIN_METHODS = ['email']
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
 
 # Disable local signup & email verification since you're using Google only
@@ -149,3 +149,9 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 LOGIN_REDIRECT_URL = reverse_lazy('medicine_list')
 LOGOUT_REDIRECT_URL = reverse_lazy('login')
 SOCIALACCOUNT_ADAPTER = 'user.adapters.CustomSocialAccountAdapter'
+
+# Create static directory if it doesn't exist
+import os
+static_dir = os.path.join(BASE_DIR, 'static')
+if not os.path.exists(static_dir):
+    os.makedirs(static_dir)
