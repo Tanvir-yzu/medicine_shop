@@ -23,6 +23,7 @@ except ImportError:
 def medicine_list(request):
     query = request.GET.get('q', '')
     medicines = Medicine.objects.all().order_by('-created_at')
+    today = timezone.now().date()
 
     if query:
         scored_medicines = []
@@ -30,16 +31,26 @@ def medicine_list(request):
             name_score = fuzz.token_sort_ratio(query.lower(), med.name.lower())
             batch_score = fuzz.token_sort_ratio(query.lower(), med.batch_number.lower())
             max_score = max(name_score, batch_score)
-            
+
             if max_score > 60:
                 scored_medicines.append((-max_score, med))
 
         scored_medicines.sort()
         medicines = [med for (score, med) in scored_medicines]
 
+    # Calculate statistics
+    total_count = medicines.count() if query else Medicine.objects.count()
+    active_count = Medicine.objects.filter(expiry_date__gt=today).count()
+    in_stock_count = Medicine.objects.filter(stock__gte=5).count()
+    low_stock_count = Medicine.objects.filter(stock__lt=5).count()
+
     return render(request, 'medicines/medicine_list.html', {
         'medicines': medicines,
         'query': query,
+        'total_count': total_count,
+        'active_count': active_count,
+        'in_stock_count': in_stock_count,
+        'low_stock_count': low_stock_count,
     })
 
 

@@ -3,98 +3,172 @@
 {% block title %}{{ medicine.name }} Details{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
-    
-    <!-- Header: Name, Batch, Actions -->
-    <div class="flex justify-between items-start mb-6">
-        <div>
-            <h2 class="text-2xl font-bold">{{ medicine.name }}</h2>
-            <p class="text-gray-600">Batch: {{ medicine.batch_number }}</p>
+<div class="max-w-5xl mx-auto">
+    <!-- Main Card -->
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <!-- Header with Gradient Background -->
+        <div class="bg-gradient-to-r from-primary to-primary-dark px-8 py-6">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-white mb-2">{{ medicine.name }}</h2>
+                    <p class="text-cyan-100 flex items-center">
+                        <i class="fas fa-barcode mr-2"></i>Batch: {{ medicine.batch_number }}
+                    </p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <a href="{% url 'medicine_update' medicine.pk %}" class="inline-flex items-center justify-center px-5 py-2.5 bg-white text-primary font-semibold rounded-lg hover:bg-cyan-50 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                        <i class="fas fa-edit mr-2"></i>Edit
+                    </a>
+                    <a href="{% url 'medicine_delete' medicine.pk %}" class="inline-flex items-center justify-center px-5 py-2.5 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                        <i class="fas fa-trash mr-2"></i>Delete
+                    </a>
+                </div>
+            </div>
         </div>
-        <div class="flex space-x-2">
-            <a href="{% url 'medicine_update' medicine.pk %}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                <i class="fas fa-edit mr-2"></i>Edit
-            </a>
-            <a href="{% url 'medicine_delete' medicine.pk %}" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                <i class="fas fa-trash mr-2"></i>Delete
-            </a>
-        </div>
-    </div>
 
-    <!-- Main Content Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- QR Code -->
-        <div class="md:col-span-1">
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <h3 class="text-lg font-semibold text-gray-700 mb-3">QR Code</h3>
-                {% if medicine.qr_code %}
-                    <img src="{{ medicine.qr_code.url }}" alt="QR Code for {{ medicine.name }}" class="w-full rounded shadow-md">
-                {% else %}
-                    <div class="bg-gray-200 h-64 flex items-center justify-center rounded-lg">
-                        <p class="text-gray-500">QR Code not available</p>
+        <!-- Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-0">
+            <!-- Left Sidebar - QR Code -->
+            <div class="lg:col-span-1 bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+                <div class="sticky top-24">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                        <i class="fas fa-qrcode mr-2 text-primary"></i>QR Code
+                    </h3>
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        {% if medicine.qr_code %}
+                            <img src="{{ medicine.qr_code.url }}" alt="QR Code for {{ medicine.name }}" class="w-full rounded-lg shadow-md">
+                        {% else %}
+                            <div class="bg-gray-100 h-64 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300">
+                                <i class="fas fa-qrcode text-4xl text-gray-400 mb-3"></i>
+                                <p class="text-gray-500 text-sm">QR Code not available</p>
+                            </div>
+                        {% endif %}
                     </div>
-                {% endif %}
+
+                    <!-- Quick Actions -->
+                    <div class="mt-6 space-y-3">
+                        <div class="bg-white rounded-xl p-4 shadow-md">
+                            <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Status</p>
+                            {% now "Y-m-d" as today_str %}
+                            {% with today_str|date:"Y-m-d" as today %}
+                                {% if medicine.expiry_date <= today %}
+                                    <span class="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold">
+                                        <i class="fas fa-exclamation-circle mr-1"></i>Expired
+                                    </span>
+                                {% elif medicine.stock < 5 %}
+                                    <span class="inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-semibold">
+                                        <i class="fas fa-box mr-1"></i>Low Stock
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
+                                        <i class="fas fa-check-circle mr-1"></i>In Stock
+                                    </span>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Content - Details -->
+            <div class="lg:col-span-2 p-8">
+                <div class="space-y-6">
+                    <!-- Price Card -->
+                    <div class="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-6 border border-primary/20">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 uppercase tracking-wide">Unit Price</p>
+                                <p class="text-4xl font-bold text-primary mt-1">{{ medicine.price }}</p>
+                            </div>
+                            <div class="bg-primary/20 rounded-full p-4">
+                                <i class="fas fa-tag text-3xl text-primary"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detail Cards Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Generic Name -->
+                        <div class="bg-gray-50 rounded-xl p-5 hover:bg-gray-100 transition-colors duration-200">
+                            <div class="flex items-center mb-2">
+                                <div class="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-prescription-bottle-alt text-primary"></i>
+                                </div>
+                                <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Generic Name</h3>
+                            </div>
+                            <p class="text-lg font-semibold text-gray-900 ml-13">{{ medicine.generic_name|default:"Not specified" }}</p>
+                        </div>
+
+                        <!-- Manufacturer -->
+                        <div class="bg-gray-50 rounded-xl p-5 hover:bg-gray-100 transition-colors duration-200">
+                            <div class="flex items-center mb-2">
+                                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-industry text-purple-600"></i>
+                                </div>
+                                <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Manufacturer</h3>
+                            </div>
+                            <p class="text-lg font-semibold text-gray-900 ml-13">{{ medicine.manufacturer }}</p>
+                        </div>
+
+                        <!-- Expiry Date -->
+                        <div class="bg-gray-50 rounded-xl p-5 hover:bg-gray-100 transition-colors duration-200">
+                            <div class="flex items-center mb-2">
+                                <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-calendar-alt text-orange-600"></i>
+                                </div>
+                                <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Expiry Date</h3>
+                            </div>
+                            {% now "Y-m-d" as today_str %}
+                            {% with today_str|date:"Y-m-d" as today %}
+                                <p class="text-lg font-semibold {% if medicine.expiry_date <= today %}text-red-600{% else %}text-green-600{% endif %} ml-13">
+                                    {{ medicine.expiry_date|date:"Y-m-d" }}
+                                </p>
+                            {% endwith %}
+                        </div>
+
+                        <!-- Stock -->
+                        <div class="bg-gray-50 rounded-xl p-5 hover:bg-gray-100 transition-colors duration-200">
+                            <div class="flex items-center mb-2">
+                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-boxes text-blue-600"></i>
+                                </div>
+                                <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Stock Level</h3>
+                            </div>
+                            <p class="text-lg font-semibold {% if medicine.stock < 5 %}text-red-600{% else %}text-green-600{% endif %} ml-13">
+                                {{ medicine.stock }} units
+                            </p>
+                            {% if medicine.stock >= 5 %}
+                                <div class="ml-13 mt-2 bg-green-100 rounded-full h-2 w-24">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: {{ medicine.stock|add:0 }}%"></div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 border border-gray-200">
+                        <div class="flex items-center mb-3">
+                            <div class="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-info-circle text-primary"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-700">Description</h3>
+                        </div>
+                        <div class="ml-13">
+                            <p class="text-gray-700 leading-relaxed">
+                                {{ medicine.description|default:"No description available."|linebreaks }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back Button -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <a href="{% url 'medicine_list' %}" class="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-all duration-200 shadow-sm hover:shadow-md">
+                        <i class="fas fa-arrow-left mr-2"></i> Back to Medicine List
+                    </a>
+                </div>
             </div>
         </div>
-
-        <!-- Medicine Details -->
-        <div class="md:col-span-2 space-y-4">
-            <!-- Generic Name -->
-            <div class="border-b pb-4">
-                <h3 class="text-lg font-semibold text-gray-700">Generic Name</h3>
-                <p class="text-gray-900">{{ medicine.generic_name|default:"Not specified" }}</p>
-            </div>
-
-            <!-- Manufacturer -->
-            <div class="border-b pb-4">
-                <h3 class="text-lg font-semibold text-gray-700">Manufacturer</h3>
-                <p class="text-gray-900">{{ medicine.manufacturer }}</p>
-            </div>
-
-            <!-- Expiry Date -->
-            <div class="border-b pb-4">
-                <h3 class="text-lg font-semibold text-gray-700">Expiry Date</h3>
-                {% now "Y-m-d" as today_str %}
-                {% with today_str|date:"Y-m-d" as today %}
-                <p class="text-lg {% if medicine.expiry_date <= today %}text-red-600 font-bold{% else %}text-green-600{% endif %}">
-                    {{ medicine.expiry_date|date:"Y-m-d" }}
-                    {% if medicine.expiry_date <= today %}
-                        <span class="ml-2 text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Expired</span>
-                    {% endif %}
-                </p>
-                {% endwith %}
-            </div>
-
-            <!-- Stock -->
-            <div class="border-b pb-4">
-                <h3 class="text-lg font-semibold text-gray-700">Stock</h3>
-                <p class="text-lg {% if medicine.stock < 5 %}text-red-600 font-bold{% else %}text-green-600{% endif %}">
-                    {{ medicine.stock }} units
-                    {% if medicine.stock < 5 %}
-                        <span class="ml-2 text-sm bg-red-100 text-red-800 px-2 py-1 rounded">Low Stock</span>
-                    {% endif %}
-                </p>
-            </div>
-
-            <!-- Price -->
-            <div class="border-b pb-4">
-                <h3 class="text-lg font-semibold text-gray-700">Price</h3>
-                <p class="text-gray-900 text-xl font-bold">{{ medicine.price }}</p>
-            </div>
-
-            <!-- Description -->
-            <div>
-                <h3 class="text-lg font-semibold text-gray-700">Description</h3>
-                <p class="text-gray-900">{{ medicine.description|default:"No description available."|linebreaks }}</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Back Button -->
-    <div class="mt-8">
-        <a href="{% url 'medicine_list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-            <i class="fas fa-arrow-left mr-2"></i> Back to List
-        </a>
     </div>
 </div>
 {% endblock %}
